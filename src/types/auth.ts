@@ -2,7 +2,7 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
-  picture: string;
+  picture?: string;
 }
 
 export interface LoginDto {
@@ -11,13 +11,11 @@ export interface LoginDto {
 }
 
 export interface RegisterDto {
-  username: string;
   email: string;
   password: string;
+  fullName: string;
 }
 
 export interface AuthResponse {
   user: User;
-  accessToken: string;
-  refreshToken: string;
 } 

@@ -19,10 +19,11 @@ import { useState } from "react";
 import { Icons } from "@/components/icons";
 import { register } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import { RegisterDto } from "@/types/auth";
 
 const formSchema = z.object({
-  username: z.string().min(2, {
-    message: "Tên người dùng phải có ít nhất 2 ký tự.",
+  fullName: z.string().min(2, {
+    message: "Họ và tên phải có ít nhất 2 ký tự.",
   }),
   email: z.string().email({
     message: "Email không hợp lệ.",
@@ -36,39 +37,46 @@ const formSchema = z.object({
   path: ["confirmPassword"],
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
+const defaultValues: FormValues = {
+  fullName: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+};
+
 export default function RegisterPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      username: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
+    defaultValues,
+    mode: "onChange",
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: FormValues) {
     try {
       setIsLoading(true);
       setError(null);
+      console.log('Sending register request with data:', values);
       const response = await register({
-        username: values.username,
+        fullName: values.fullName,
         email: values.email,
         password: values.password,
       });
+      console.log('Register response:', response);
       
-      // Lưu tokens vào localStorage
-      localStorage.setItem("accessToken", response.accessToken);
-      localStorage.setItem("refreshToken", response.refreshToken);
+      // Lưu user data vào localStorage
+      localStorage.setItem("user", JSON.stringify(response.user));
       
       // Chuyển hướng đến trang dashboard
       router.push("/dashboard");
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Đăng ký thất bại");
+    } catch (err) {
+      console.error('Register error:', err);
+      setError(err instanceof Error ? err.message : "Đăng ký thất bại");
     } finally {
       setIsLoading(false);
     }
@@ -88,12 +96,12 @@ export default function RegisterPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="username"
+                name="fullName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tên người dùng</FormLabel>
+                    <FormLabel>Họ và tên</FormLabel>
                     <FormControl>
-                      <Input placeholder="johndoe" {...field} />
+                      <Input placeholder="Nguyễn Văn A" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
