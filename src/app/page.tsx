@@ -1,103 +1,142 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { CourseCard } from "@/components/course-card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search, ChevronRight, Star } from "lucide-react";
+import Link from "next/link";
+import { useAuth } from "@/hooks/use-auth";
+
+// Mock data - Thay thế bằng API call thực tế
+const courses = [
+  {
+    id: "1",
+    title: "Complete Web Development Bootcamp",
+    description: "Learn HTML, CSS, JavaScript, React, Node.js, MongoDB and more!",
+    thumbnail: "https://picsum.photos/seed/course1/800/450",
+    instructor: "John Doe",
+    rating: 4.8,
+    price: 49.99,
+    category: "Web Development",
+  },
+  {
+    id: "2",
+    title: "Python for Data Science",
+    description: "Master Python programming and data analysis with real-world projects",
+    thumbnail: "https://picsum.photos/seed/course2/800/450",
+    instructor: "Jane Smith",
+    rating: 4.7,
+    price: 39.99,
+    category: "Data Science",
+  },
+  {
+    id: "3",
+    title: "Mobile App Development with Flutter",
+    description: "Build beautiful cross-platform apps with Flutter and Dart",
+    thumbnail: "https://picsum.photos/seed/course3/800/450",
+    instructor: "Mike Johnson",
+    rating: 4.9,
+    price: 59.99,
+    category: "Mobile Development",
+  },
+  {
+    id: "4",
+    title: "Machine Learning Fundamentals",
+    description: "Learn the basics of machine learning and AI",
+    thumbnail: "https://picsum.photos/seed/course4/800/450",
+    instructor: "Sarah Wilson",
+    rating: 4.6,
+    price: 0,
+    category: "AI & ML",
+  },
+  // Thêm nhiều khóa học khác...
+];
+
+const categories = [
+  "All",
+  "Web Development",
+  "Mobile Development",
+  "Data Science",
+  "AI & ML",
+  "Design",
+  "Business",
+];
+
+export default function HomePage() {
+  const { isAuthenticated } = useAuth();
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="flex min-h-screen flex-col">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary/5 to-background py-16 md:py-24">
+        <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+              Learn New Skills
+              <br />
+              <span className="text-primary">Anytime, Anywhere</span>
+            </h1>
+            <p className="mt-6 text-lg text-muted-foreground">
+              Discover thousands of courses taught by industry experts and start learning today.
+            </p>
+            <div className="mt-8 flex justify-center">
+              <Button asChild size="lg" className="rounded-full">
+                <Link href="/courses">Explore Courses</Link>
+              </Button>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      {/* Featured Courses */}
+      <section className="py-12">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-8 flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Featured Courses</h2>
+            <Button variant="ghost" className="gap-2 cursor-pointer" asChild>
+              <Link href="/courses">
+                View All
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {courses.map((course) => (
+              <CourseCard key={course.id} {...course} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-12">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 className="mb-8 text-center text-2xl font-bold">What Our Students Say</h2>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="rounded-lg border p-6">
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                </div>
+                <p className="mt-4 text-muted-foreground">
+                  "This platform has completely transformed my learning experience. The courses are well-structured and the instructors are amazing!"
+                </p>
+                <div className="mt-4 flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-full bg-primary/10" />
+                  <div>
+                    <div className="font-medium">Student Name</div>
+                    <div className="text-sm text-muted-foreground">Web Development Student</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

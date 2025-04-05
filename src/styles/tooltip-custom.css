@@ -1,0 +1,35 @@
+/* Custom tooltip arrow styling */
+.tooltip-arrow {
+  fill: white !important; /* Light mode arrow color */
+}
+
+:is([data-theme="dark"] .tooltip-arrow, .dark .tooltip-arrow) {
+  fill: #1e293b !important; /* Dark mode arrow color (slate-800) */
+}
+
+/* Tooltip styling for video player */
+[role="tooltip"] [data-radix-popper-content-wrapper] > div {
+  background-color: white !important;
+  color: #0f172a !important; /* slate-900 */
+  border: 1px solid #e2e8f0 !important; /* slate-200 */
+  border-radius: 0.375rem !important;
+  padding: 0.5rem 0.75rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+}
+
+:is([data-theme="dark"], .dark) [role="tooltip"] [data-radix-popper-content-wrapper] > div {
+  background-color: #1e293b !important; /* slate-800 */
+  color: white !important;
+  border: 1px solid #334155 !important; /* slate-700 */
+}
+
+/* Make sure the tooltip has correct z-index and animation */
+[data-state="open"][role="tooltip"] {
+  animation: none !important;
+  z-index: 100;
+}
+
+/* Adjust tooltip position */
+[data-side="top"] {
+  margin-bottom: 8px !important;
+} 

@@ -119,4 +119,40 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+    background-color: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full;
+    background-color: oklch(0.556 0 0 / 40%);
+    border: 2px solid transparent;
+    background-clip: content-box;
+    transition: all 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(0.556 0 0 / 60%);
+    border-width: 1px;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background-color: oklch(0.708 0 0 / 40%);
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(0.708 0 0 / 60%);
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: 6px;
+    scrollbar-color: oklch(0.556 0 0 / 40%) transparent;
+  }
+
+  .dark * {
+    scrollbar-color: oklch(0.708 0 0 / 40%) transparent;
+  }
 }

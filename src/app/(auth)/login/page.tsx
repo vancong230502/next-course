@@ -1,167 +1,134 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import Link from "next/link";
 import { useState } from "react";
-import { Icons } from "@/components/icons";
-import { login, loginWithGoogle } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-
-const formSchema = z.object({
-  email: z.string().email({
-    message: "Email không hợp lệ.",
-  }),
-  password: z.string().min(1, {
-    message: "Vui lòng nhập mật khẩu.",
-  }),
-});
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { loginWithGoogle } from "@/lib/auth";
+import { Icons } from "@/components/icons";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      setIsLoading(true);
-      setError(null);
-      const response = await login(values);
-      
-      // Lưu tokens vào localStorage
-      localStorage.setItem("accessToken", response.accessToken);
-      localStorage.setItem("refreshToken", response.refreshToken);
-      
-      // Chuyển hướng đến trang dashboard
+      // Implement your login logic here
       router.push("/dashboard");
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Đăng nhập thất bại");
+    } catch (err) {
+      setError("Invalid email or password");
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
-  async function handleGoogleSignIn() {
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
     try {
-      setIsLoading(true);
-      setError(null);
       await loginWithGoogle();
+      router.push("/dashboard");
     } catch (error) {
-      setError("Đã xảy ra lỗi khi đăng nhập với Google.");
-      setIsLoading(false);
+      console.error("Google sign in error:", error);
+    } finally {
+      setIsGoogleLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="w-[400px]">
-        <CardHeader>
-          <CardTitle>Đăng nhập</CardTitle>
-          <CardDescription>
-            Đăng nhập vào tài khoản của bạn
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="john@example.com" type="email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mật khẩu</FormLabel>
-                    <FormControl>
-                      <Input placeholder="********" type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {error && (
-                <div className="text-sm text-red-500">
-                  {error}
-                </div>
-              )}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading && (
-                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Đăng nhập
-              </Button>
-            </form>
-          </Form>
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Hoặc tiếp tục với
-              </span>
-            </div>
+    <div className="flex h-[calc(100vh-8rem)] items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6 rounded-lg border p-8 shadow-lg">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Welcome Back</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Sign in to your account to continue
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="cursor-text"
+            />
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="cursor-text"
+            />
+          </div>
+
+          {error && (
+            <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+
           <Button
-            variant="outline"
-            type="button"
-            className="w-full"
+            type="submit"
+            className="w-full cursor-pointer"
             disabled={isLoading}
-            onClick={handleGoogleSignIn}
           >
-            {isLoading ? (
-              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Icons.google className="mr-2 h-4 w-4" />
-            )}
-            Google
+            {isLoading ? "Signing in..." : "Sign In"}
           </Button>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-sm text-center">
-            <Link href="/forgot-password" className="text-blue-600 hover:underline">
-              Quên mật khẩu?
-            </Link>
+        </form>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
           </div>
-          <div className="text-sm text-center text-gray-600">
-            Chưa có tài khoản?{" "}
-            <Link href="/register" className="text-blue-600 hover:underline">
-              Đăng ký
-            </Link>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
           </div>
-        </CardFooter>
-      </Card>
+        </div>
+
+        <Button
+          variant="outline"
+          type="button"
+          className="w-full cursor-pointer"
+          disabled={isLoading}
+          onClick={handleGoogleSignIn}
+        >
+          {isLoading ? (
+            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Icons.google className="mr-2 h-4 w-4" />
+          )}
+          Google
+        </Button>
+
+        <div className="text-center text-sm">
+          <span className="text-muted-foreground">Don't have an account? </span>
+          <Link href="/register" className="font-medium text-primary hover:underline cursor-pointer">
+            Register
+          </Link>
+        </div>
+      </div>
     </div>
   );
 } 
