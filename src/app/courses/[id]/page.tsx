@@ -26,7 +26,7 @@ import {
   Check,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
-import { useAuth } from "@/hooks/use-auth";
+
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -59,7 +59,7 @@ interface Course {
 
 export default function CourseDetailPage() {
   const { id } = useParams();
-  const { isAuthenticated } = useAuth();
+  
   const [selectedLesson, setSelectedLesson] = useState(0);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);

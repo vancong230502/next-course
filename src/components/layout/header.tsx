@@ -12,8 +12,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { logout } from "@/lib/auth";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuthStore } from '../../store/auth-store';
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LogIn, LogOut, User, LayoutDashboard, Bookmark, GraduationCap, ShieldCheck, Search, X, Menu, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -36,11 +35,25 @@ import {
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated, user, isAdmin } = useAuth();
+  const { role, user, logout } = useAuthStore();
   const [showSearch, setShowSearch] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Get user initials for avatar
+  const getInitials = () => {
+    if (!user?.fullName) return 'U';
+    
+    const names = user.fullName.trim().split(' ');
+    if (names.length === 0) return 'U';
+    
+    if (names.length === 1) {
+      return names[0].charAt(0).toUpperCase();
+    }
+    
+    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+  };
 
   // Lắng nghe phím tắt Ctrl+K hoặc Cmd+K
   useEffect(() => {
@@ -55,7 +68,7 @@ export function Header() {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogoutAndRedirect = async () => {
     try {
       await logout();
       router.push("/login");
@@ -113,6 +126,28 @@ export function Header() {
       </Link>
     </>
   );
+  
+  // Lấy giá trị user trực tiếp từ localStorage nếu store không hoạt động
+  const [localUser, setLocalUser] = useState<any>(null);
+  const [localRole, setLocalRole] = useState<string | null>(null);
+  
+  useEffect(() => {
+    try {
+      const authStorage = localStorage.getItem("auth-storage");
+      if (authStorage) {
+        const parsedData = JSON.parse(authStorage);
+        if (parsedData.state && parsedData.state.user) {
+          setLocalUser(parsedData.state.user);
+          setLocalRole(parsedData.state.role);
+          console.log("Local user data from localStorage:", parsedData.state);
+        }
+      }
+    } catch (error) {
+      console.error("Error reading from localStorage:", error);
+    }
+  }, []);
+  
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -137,30 +172,33 @@ export function Header() {
               <span className="sr-only">Search</span>
             </Button>
             <ThemeToggle />
-            {isAuthenticated ? (
+            {user?.role === "USER" ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 cursor-pointer p-0 hover:bg-gray-200 dark:hover:bg-gray-800">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="/avatars/01.png" alt="@user" />
-                      <AvatarFallback className="bg-transparent">
-                        <User className="h-4 w-4 text-foreground" />
-                      </AvatarFallback>
+                      {user?.picture ? (
+                        <AvatarImage src={user?.picture} alt={user?.email} />
+                      ) : (
+                        <AvatarFallback className="bg-transparent">
+                          <User className="h-4 w-4 text-foreground" />
+                        </AvatarFallback>
+                      )}
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel>
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">{user?.email}</p>
+                      <p className="text-sm font-medium">{user?.fullName || user?.email}</p>
                       <p className="text-xs text-muted-foreground">
-                        {isAdmin ? (
+                        {user?.role === "USER"  ? (
                           <span className="flex items-center">
                             <ShieldCheck className="mr-1 h-3 w-3 text-blue-500" />
-                            Administrator
+                            USER
                           </span>
                         ) : (
-                          "Student"
+                          "User"
                         )}
                       </p>
                     </div>
@@ -178,14 +216,14 @@ export function Header() {
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </DropdownMenuItem>
-                  {isAdmin && (
-                    <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/admin")}>
+                  {user?.role === "USER"  && (
+                    <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/USER")}>
                       <ShieldCheck className="mr-2 h-4 w-4" />
-                      Admin
+                      USER
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
+                  <DropdownMenuItem className="cursor-pointer" onClick={handleLogoutAndRedirect}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Log out
                   </DropdownMenuItem>
@@ -245,8 +283,12 @@ export function Header() {
                     onItemClick={() => setMobileMenuOpen(false)}
                   />
                   
-                  {isAuthenticated && (
+                  {user?.role === "USER"  && (
                     <>
+                      <div className="border-t border-t-muted my-2"></div>
+                      <div className="py-2 text-sm">
+                        <p className="font-medium">{user?.fullName || user?.email}</p>
+                      </div>
                       <div className="border-t border-t-muted my-2"></div>
                       <Link
                         href="/dashboard"
@@ -272,23 +314,23 @@ export function Header() {
                         <User className="h-4 w-4" />
                         Profile
                       </Link>
-                      {isAdmin && (
+                      {user?.role === "USER"  && (
                         <Link
-                          href="/admin"
+                          href="/USER"
                           className="flex items-center gap-2 py-3 border-b border-b-muted text-sm font-medium"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           <ShieldCheck className="h-4 w-4" />
-                          Admin
+                          USER
                         </Link>
                       )}
                     </>
                   )}
                 </div>
-                {isAuthenticated && (
+                {user?.role === "USER"  && (
                   <div className="border-t p-4">
                     <Button variant="outline" className="w-full" onClick={() => {
-                      handleLogout();
+                      handleLogoutAndRedirect();
                       setMobileMenuOpen(false);
                     }}>
                       <LogOut className="mr-2 h-4 w-4" />

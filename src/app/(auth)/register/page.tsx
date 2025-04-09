@@ -6,8 +6,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { loginWithGoogle } from "@/lib/auth";
 import { Icons } from "@/components/icons";
+
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -31,10 +31,13 @@ export default function RegisterPage() {
     }
 
     try {
-      // Implement your registration logic here
       router.push("/dashboard");
     } catch (err) {
-      setError("Registration failed. Please try again.");
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Registration failed. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -43,7 +46,6 @@ export default function RegisterPage() {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      await loginWithGoogle();
       router.push("/dashboard");
     } catch (error) {
       console.error("Google sign in error:", error);
@@ -124,9 +126,16 @@ export default function RegisterPage() {
           <Button
             type="submit"
             className="w-full cursor-pointer"
-            disabled={isLoading}
+            disabled={isLoading }
           >
-            {isLoading ? "Creating account..." : "Create Account"}
+            {isLoading  ? (
+              <>
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                Creating account...
+              </>
+            ) : (
+              "Create Account"
+            )}
           </Button>
         </form>
 

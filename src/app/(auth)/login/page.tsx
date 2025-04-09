@@ -6,11 +6,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { loginWithGoogle } from "@/lib/auth";
 import { Icons } from "@/components/icons";
+import { useAuthStore } from "@/store/auth-store"; // Đường dẫn tuỳ theo cấu trúc dự án
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login, loginWithGoogle } = useAuthStore();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -19,30 +21,37 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
+  
     setIsLoading(true);
     setError("");
-
+  
     try {
-      // Implement your login logic here
-      router.push("/dashboard");
+      await login(email, password);
+      router.push("/dashboard"); // Không cần setIsLoading(false) nữa
     } catch (err) {
-      setError("Invalid email or password");
-    } finally {
-      setIsLoading(false);
+      setError(err instanceof Error ? err.message : "Invalid email or password");
+      setIsLoading(false); // Chỉ đặt false khi thất bại
     }
   };
+  
 
   const handleGoogleSignIn = async () => {
+    if (isGoogleLoading) return; // Ngăn spam click
+  
     setIsGoogleLoading(true);
+    setError("");
+  
     try {
       await loginWithGoogle();
-      router.push("/dashboard");
-    } catch (error) {
+      router.push("/dashboard"); // Không set isGoogleLoading false sau khi redirect
+    } catch (error: any) {
+      setError(error.message || "Google sign in failed");
       console.error("Google sign in error:", error);
-    } finally {
-      setIsGoogleLoading(false);
+      setIsGoogleLoading(false); // Chỉ reset khi có lỗi
     }
   };
+  
 
   return (
     <div className="flex h-[calc(100vh-8rem)] items-center justify-center p-4">
@@ -92,7 +101,14 @@ export default function LoginPage() {
             className="w-full cursor-pointer"
             disabled={isLoading}
           >
-            {isLoading ? "Signing in..." : "Sign In"}
+            {isLoading ? (
+              <>
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              "Sign In"
+            )}
           </Button>
         </form>
 
@@ -111,10 +127,10 @@ export default function LoginPage() {
           variant="outline"
           type="button"
           className="w-full cursor-pointer"
-          disabled={isLoading}
+          disabled={isGoogleLoading}
           onClick={handleGoogleSignIn}
         >
-          {isLoading ? (
+          {isGoogleLoading ? (
             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <Icons.google className="mr-2 h-4 w-4" />
@@ -124,11 +140,14 @@ export default function LoginPage() {
 
         <div className="text-center text-sm">
           <span className="text-muted-foreground">Don't have an account? </span>
-          <Link href="/register" className="font-medium text-primary hover:underline cursor-pointer">
+          <Link
+            href="/register"
+            className="font-medium text-primary hover:underline cursor-pointer"
+          >
             Register
           </Link>
         </div>
       </div>
     </div>
   );
-} 
+}

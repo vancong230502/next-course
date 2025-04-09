@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, ChevronRight, Star } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "@/hooks/use-auth";
+
 
 // Mock data - Thay thế bằng API call thực tế
 const courses = [
@@ -63,7 +63,7 @@ const categories = [
 ];
 
 export default function HomePage() {
-  const { isAuthenticated } = useAuth();
+  
 
   return (
     <div className="flex min-h-screen flex-col">
