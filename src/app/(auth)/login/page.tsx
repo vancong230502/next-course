@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Icons } from "@/components/icons";
-import { useAuthStore } from "@/store/auth-store"; // Đường dẫn tuỳ theo cấu trúc dự án
+import { useAuthStore } from "@/store/auth-store";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,31 +27,34 @@ export default function LoginPage() {
     setError("");
   
     try {
+      console.log("Submitting login form with email:", email);
       await login(email, password);
-      router.push("/dashboard"); // Không cần setIsLoading(false) nữa
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid email or password");
-      setIsLoading(false); // Chỉ đặt false khi thất bại
+      console.log("Login successful, redirecting to dashboard");
+      router.push("/dashboard");
+    } catch (err: any) {
+      console.error("Login error in component:", err);
+      setError(err.response?.data?.message || "Invalid email or password");
+    } finally {
+      setIsLoading(false);
     }
   };
-  
 
   const handleGoogleSignIn = async () => {
-    if (isGoogleLoading) return; // Ngăn spam click
+    if (isGoogleLoading) return;
   
     setIsGoogleLoading(true);
     setError("");
   
     try {
+      console.log("Initiating Google sign in");
       await loginWithGoogle();
-      router.push("/dashboard"); // Không set isGoogleLoading false sau khi redirect
+      // Không cần redirect vì loginWithGoogle sẽ chuyển hướng đến trang Google
     } catch (error: any) {
+      console.error("Google sign in error in component:", error);
       setError(error.message || "Google sign in failed");
-      console.error("Google sign in error:", error);
-      setIsGoogleLoading(false); // Chỉ reset khi có lỗi
+      setIsGoogleLoading(false);
     }
   };
-  
 
   return (
     <div className="flex h-[calc(100vh-8rem)] items-center justify-center p-4">

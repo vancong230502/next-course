@@ -1,7 +1,6 @@
 "use client";
-
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,9 +11,21 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuthStore } from '../../store/auth-store';
+import { useAuthStore } from "../../store/auth-store";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { LogIn, LogOut, User, LayoutDashboard, Bookmark, GraduationCap, ShieldCheck, Search, X, Menu, Heart } from "lucide-react";
+import {
+  LogIn,
+  LogOut,
+  User,
+  LayoutDashboard,
+  Bookmark,
+  GraduationCap,
+  ShieldCheck,
+  Search,
+  X,
+  Menu,
+  Heart,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import {
@@ -31,28 +42,32 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
+import { useLoading } from "@/hooks/use-loading";
 
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const { role, user, logout } = useAuthStore();
+  const { startLoading } = useLoading();
   const [showSearch, setShowSearch] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   // Get user initials for avatar
   const getInitials = () => {
-    if (!user?.fullName) return 'U';
-    
-    const names = user.fullName.trim().split(' ');
-    if (names.length === 0) return 'U';
-    
+    if (!user?.fullName) return "U";
+
+    const names = user.fullName.trim().split(" ");
+    if (names.length === 0) return "U";
+
     if (names.length === 1) {
       return names[0].charAt(0).toUpperCase();
     }
-    
-    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+
+    return (
+      names[0].charAt(0) + names[names.length - 1].charAt(0)
+    ).toUpperCase();
   };
 
   // Lắng nghe phím tắt Ctrl+K hoặc Cmd+K
@@ -86,12 +101,18 @@ export function Header() {
     }
   };
 
+  const handleNavigation = (path: string) => {
+    startLoading();
+    router.push(path);
+  };
   const NavItems = ({ mobile = false, onItemClick = () => {} }) => (
     <>
       <Link
         href="/courses"
-        className={`text-sm font-medium transition-colors hover:text-primary cursor-pointer ${
-          pathname === "/courses" ? "text-primary" : "text-muted-foreground"
+        className={`text-base font-medium transition-colors hover:text-primary cursor-pointer relative ${
+          pathname === "/courses"
+            ? "text-primary after:absolute after:left-0 after:-bottom-1 after:w-full after:h-[2px] after:bg-primary"
+            : "text-muted-foreground"
         } ${mobile ? "flex items-center py-3 border-b border-b-muted" : ""}`}
         onClick={onItemClick}
       >
@@ -100,10 +121,13 @@ export function Header() {
           Courses
         </span>
       </Link>
+
       <Link
         href="/donate"
-        className={`text-sm font-medium transition-colors hover:text-primary cursor-pointer ${
-          pathname === "/donate" ? "text-primary" : "text-muted-foreground"
+        className={`text-base font-medium transition-colors hover:text-primary cursor-pointer relative ${
+          pathname === "/donate"
+            ? "text-primary after:absolute after:left-0 after:-bottom-1 after:w-full after:h-[2px] after:bg-primary"
+            : "text-muted-foreground"
         } ${mobile ? "flex items-center py-3 border-b border-b-muted" : ""}`}
         onClick={onItemClick}
       >
@@ -112,10 +136,13 @@ export function Header() {
           Donate
         </span>
       </Link>
+
       <Link
         href="/policy"
-        className={`text-sm font-medium transition-colors hover:text-primary cursor-pointer ${
-          pathname === "/policy" ? "text-primary" : "text-muted-foreground"
+        className={`text-base font-medium transition-colors hover:text-primary cursor-pointer relative ${
+          pathname === "/policy"
+            ? "text-primary after:absolute after:left-0 after:-bottom-1 after:w-full after:h-[2px] after:bg-primary"
+            : "text-muted-foreground"
         } ${mobile ? "flex items-center py-3 border-b border-b-muted" : ""}`}
         onClick={onItemClick}
       >
@@ -126,11 +153,11 @@ export function Header() {
       </Link>
     </>
   );
-  
+
   // Lấy giá trị user trực tiếp từ localStorage nếu store không hoạt động
   const [localUser, setLocalUser] = useState<any>(null);
   const [localRole, setLocalRole] = useState<string | null>(null);
-  
+
   useEffect(() => {
     try {
       const authStorage = localStorage.getItem("auth-storage");
@@ -146,26 +173,32 @@ export function Header() {
       console.error("Error reading from localStorage:", error);
     }
   }, []);
-  
-
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto max-w-7xl">
         <div className="flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-6">
-            <Link href="/" className="flex cursor-pointer items-center space-x-2">
+            <Link
+              href="/"
+              className={`text-xl font-semibold transition-colors hover:text-primary cursor-pointer flex items-center space-x-2 relative ${
+                pathname === "/"
+                  ? "text-primary after:absolute after:left-0 after:-bottom-1 after:w-full after:h-[2px] after:bg-primary"
+                  : "text-muted-foreground"
+              }`}
+            >
               <span className="font-bold">Studiac</span>
             </Link>
+
             <nav className="hidden md:flex items-center space-x-6">
               <NavItems />
             </nav>
           </div>
           <div className="ml-auto flex items-center space-x-2">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
-              className="h-8 w-8 rounded-md"
+              className="h-8 w-8 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800"
               onClick={() => setSearchOpen(true)}
             >
               <Search className="h-4 w-4" />
@@ -175,7 +208,10 @@ export function Header() {
             {user?.role === "USER" ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 cursor-pointer p-0 hover:bg-gray-200 dark:hover:bg-gray-800">
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 cursor-pointer p-0 hover:bg-gray-200 dark:hover:bg-gray-800"
+                  >
                     <Avatar className="h-8 w-8">
                       {user?.picture ? (
                         <AvatarImage src={user?.picture} alt={user?.email} />
@@ -190,9 +226,11 @@ export function Header() {
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel>
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">{user?.fullName || user?.email}</p>
+                      <p className="text-sm font-medium">
+                        {user?.fullName || user?.email}
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        {user?.role === "USER"  ? (
+                        {user?.role === "USER" ? (
                           <span className="flex items-center">
                             <ShieldCheck className="mr-1 h-3 w-3 text-blue-500" />
                             USER
@@ -204,26 +242,41 @@ export function Header() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/dashboard")}>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => handleNavigation("/dashboard")}
+                  >
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     Dashboard
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/my-courses")}>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => handleNavigation("/my-courses")}
+                  >
                     <Bookmark className="mr-2 h-4 w-4" />
                     My Courses
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/profile")}>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => handleNavigation("/profile")}
+                  >
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </DropdownMenuItem>
-                  {user?.role === "USER"  && (
-                    <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/USER")}>
+                  {user?.role === "USER" && (
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => router.push("/USER")}
+                    >
                       <ShieldCheck className="mr-2 h-4 w-4" />
                       USER
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer" onClick={handleLogoutAndRedirect}>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={handleLogoutAndRedirect}
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     Log out
                   </DropdownMenuItem>
@@ -232,7 +285,10 @@ export function Header() {
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 cursor-pointer p-0 hover:bg-gray-200 dark:hover:bg-gray-800">
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 cursor-pointer p-0 hover:bg-gray-200 dark:hover:bg-gray-800"
+                  >
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="bg-transparent">
                         <User className="h-4 w-4 text-foreground" />
@@ -241,11 +297,17 @@ export function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end">
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/login")}>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => router.push("/login")}
+                  >
                     <LogIn className="mr-2 h-4 w-4" />
                     Login
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/register")}>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => router.push("/register")}
+                  >
                     <User className="mr-2 h-4 w-4" />
                     Register
                   </DropdownMenuItem>
@@ -256,9 +318,9 @@ export function Header() {
             {/* Mobile Menu Button */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="md:hidden h-8 w-8"
                 >
                   <Menu className="h-5 w-5" />
@@ -270,7 +332,11 @@ export function Header() {
                   <div className="flex items-center justify-between">
                     <SheetTitle className="text-left">Menu</SheetTitle>
                     <SheetClose asChild>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 p-0 rounded-full">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 p-0 rounded-full"
+                      >
                         <X className="h-4 w-4" />
                         <span className="sr-only">Close</span>
                       </Button>
@@ -278,66 +344,11 @@ export function Header() {
                   </div>
                 </SheetHeader>
                 <div className="flex flex-col px-4 py-2">
-                  <NavItems 
-                    mobile={true} 
+                  <NavItems
+                    mobile={true}
                     onItemClick={() => setMobileMenuOpen(false)}
                   />
-                  
-                  {user?.role === "USER"  && (
-                    <>
-                      <div className="border-t border-t-muted my-2"></div>
-                      <div className="py-2 text-sm">
-                        <p className="font-medium">{user?.fullName || user?.email}</p>
-                      </div>
-                      <div className="border-t border-t-muted my-2"></div>
-                      <Link
-                        href="/dashboard"
-                        className="flex items-center gap-2 py-3 border-b border-b-muted text-sm font-medium"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <LayoutDashboard className="h-4 w-4" />
-                        Dashboard
-                      </Link>
-                      <Link
-                        href="/my-courses"
-                        className="flex items-center gap-2 py-3 border-b border-b-muted text-sm font-medium"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <Bookmark className="h-4 w-4" />
-                        My Courses
-                      </Link>
-                      <Link
-                        href="/profile"
-                        className="flex items-center gap-2 py-3 border-b border-b-muted text-sm font-medium"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <User className="h-4 w-4" />
-                        Profile
-                      </Link>
-                      {user?.role === "USER"  && (
-                        <Link
-                          href="/USER"
-                          className="flex items-center gap-2 py-3 border-b border-b-muted text-sm font-medium"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <ShieldCheck className="h-4 w-4" />
-                          USER
-                        </Link>
-                      )}
-                    </>
-                  )}
                 </div>
-                {user?.role === "USER"  && (
-                  <div className="border-t p-4">
-                    <Button variant="outline" className="w-full" onClick={() => {
-                      handleLogoutAndRedirect();
-                      setMobileMenuOpen(false);
-                    }}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Log out
-                    </Button>
-                  </div>
-                )}
               </SheetContent>
             </Sheet>
           </div>
@@ -353,15 +364,15 @@ export function Header() {
             <form onSubmit={handleSearch} className="w-full">
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Search documentation..." 
+                <Input
+                  placeholder="Search documentation..."
                   className="pl-8 bg-background focus-visible:ring-0 focus-visible:ring-offset-0 border-none shadow-none"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
                 />
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
                   type="button"
                   className="absolute right-0 top-0 h-9 w-9 px-0 text-muted-foreground hover:text-foreground"
@@ -374,19 +385,21 @@ export function Header() {
             </form>
           </div>
           <div className="p-4 pt-2 max-h-[50vh] overflow-y-auto">
-            <h4 className="mb-2 text-xs text-muted-foreground font-medium uppercase tracking-wide">Popular topics</h4>
+            <h4 className="mb-2 text-xs text-muted-foreground font-medium uppercase tracking-wide">
+              Popular topics
+            </h4>
             <div className="grid grid-cols-2 gap-3">
               {[
-                "JavaScript", 
-                "React", 
-                "Python", 
-                "Web Development", 
-                "UI/UX", 
+                "JavaScript",
+                "React",
+                "Python",
+                "Web Development",
+                "UI/UX",
                 "Mobile Development",
                 "Data Science",
-                "Machine Learning"
+                "Machine Learning",
               ].map((term) => (
-                <div 
+                <div
                   key={term}
                   className="flex items-center gap-2 rounded-md p-2 text-sm hover:bg-muted cursor-pointer"
                   onClick={() => {
@@ -404,4 +417,4 @@ export function Header() {
       </Dialog>
     </header>
   );
-} 
+}

@@ -3,6 +3,7 @@ import {
   Mail,
   Github,
   Chrome,
+  GraduationCap,
   type LucideIcon,
 } from "lucide-react";
 
@@ -13,4 +14,5 @@ export const Icons = {
   mail: Mail,
   github: Github,
   google: Chrome,
+  logo: GraduationCap,
 }; 

@@ -1,3 +1,4 @@
+// components/global-loading.tsx
 'use client';
 
 import { useEffect } from 'react';
@@ -10,7 +11,6 @@ export function GlobalLoading() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Handle route changes
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const link = target.closest('a');
@@ -35,4 +35,4 @@ export function GlobalLoading() {
       <ComponentLoading />
     </div>
   );
-} 
+}

@@ -1,22 +1,19 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { useAuthStore } from "@/store/auth-store";
+import { useAuth } from "@/hooks/use-auth";
 import AdminDashboard from "@/components/dashboard/admin-dashboard";
 import UserDashboard from "@/components/dashboard/user-dashboard";
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const { user, role } = useAuthStore();
+  const { user, role, isLoading } = useAuth(true);
 
-  useEffect(() => {
-    if (!user) {
-      router.push("/login");
-    }
-  }, [user, router]);
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
-  if (!user) return null; // Hiển thị trống tạm thời trong khi redirect
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="py-8">

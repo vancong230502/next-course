@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import api from "@/lib/axios";
+import { useRouter } from "next/navigation";
 
 // Định nghĩa kiểu User
 export interface User {
@@ -23,15 +25,11 @@ interface AuthState {
   // Actions
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => void;
-  register: (
-    email: string,
-    password: string,
-    fullName: string
-  ) => Promise<void>;
+  register: (email: string, password: string, fullName: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
-  refreshToken: () => Promise<void>;
   clearError: () => void;
+  clearUserData: () => void;
 }
 
 // Tạo auth store với persist middleware
@@ -48,29 +46,26 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await fetch("http://127.0.0.1:8000/auth/login", {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email, password }),
-          });
-
-          const data = await response.json();
-          console.log("dữ liệu là", data);
-          if (!response.ok) {
-            throw new Error(data.message || "Đăng nhập thất bại");
+          console.log("Attempting login with:", { email });
+          const { data } = await api.post('/auth/login', { email, password });
+          console.log("Login response:", data);
+          
+          // Kiểm tra xem data có phải là một User object không
+          if (data && typeof data === 'object' && 'id' in data && 'email' in data && 'role' in data) {
+            set({
+              user: data,
+              role: data.role,
+              error: null,
+            });
+          } else {
+            console.error("Invalid response format:", data);
+            set({ error: "Invalid response format from server" });
+            throw new Error("Invalid response format from server");
           }
-
-          set({
-            user: data,
-            role: data.role,
-            error: null,
-          });
-          return data;
         } catch (error: any) {
-          set({ error: error.message || "Đăng nhập thất bại" });
+          console.error("Login error:", error);
+          const errorMessage = error.response?.data?.message || "Invalid email or password";
+          set({ error: errorMessage });
           throw error;
         } finally {
           set({ isLoading: false });
@@ -81,30 +76,26 @@ export const useAuthStore = create<AuthState>()(
       register: async (email: string, password: string, fullName: string) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await fetch("http://127.0.0.1:8000/auth/register", {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email, password, fullName }),
+          const { data } = await api.post('/auth/register', { 
+            email, 
+            password, 
+            fullName 
           });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.message || "Đăng ký thất bại");
+          
+          // Kiểm tra xem data có phải là một User object không
+          if (data && typeof data === 'object' && 'id' in data && 'email' in data && 'role' in data) {
+            set({
+              user: data,
+              role: data.role,
+              error: null,
+            });
+          } else {
+            set({ error: "Invalid response format from server" });
+            throw new Error("Invalid response format from server");
           }
-
-          set({
-            user: data,
-            role: data.role,
-
-            error: null,
-          });
-          return data;
         } catch (error: any) {
-          set({ error: error.message || "Đăng ký thất bại" });
+          const errorMessage = error.response?.data?.message || "Registration failed";
+          set({ error: errorMessage });
           throw error;
         } finally {
           set({ isLoading: false });
@@ -113,53 +104,46 @@ export const useAuthStore = create<AuthState>()(
 
       // Action logout
       logout: async () => {
+        // Đặt trạng thái loading để tránh nhiều request
+        if (get().isLoading) return;
+        
         set({ isLoading: true });
+        
         try {
-          await fetch("http://127.0.0.1:8000/auth/logout", {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-        } catch (error) {
-          console.error("Logout error:", error);
-        } finally {
+          // Xóa thông tin người dùng trước khi gọi API logout
+          // để tránh các request không cần thiết
           set({
             user: null,
             role: null,
-            isLoading: false,
-
             error: null,
           });
+          
+          // Gọi API logout
+          await api.post('/auth/logout');
+        } catch (error) {
+          console.error("Logout error:", error);
+        } finally {
+          set({ isLoading: false });
         }
       },
 
       // Action kiểm tra trạng thái xác thực
       checkAuth: async () => {
+        // Nếu đang loading, không gọi API
+        if (get().isLoading) return;
+        
         set({ isLoading: true });
         try {
-          const response = await fetch("http://127.0.0.1:8000/auth/profile", {
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (response.ok) {
-            const userData = await response.json();
+          const { data } = await api.get('/auth/profile');
+          // Kiểm tra xem data có phải là một User object không
+          if (data && typeof data === 'object' && 'id' in data && 'email' in data && 'role' in data) {
             set({
-              user: userData,
-              role: userData.role,
+              user: data,
+              role: data.role,
               error: null,
             });
           } else {
-            // Reset state nếu không có thông tin xác thực
-            set({
-              user: null,
-              role: null,
-              error: null,
-            });
+            throw new Error("Invalid response format from server");
           }
         } catch (error) {
           console.error("Auth check failed:", error);
@@ -172,53 +156,27 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: false });
         }
       },
+
       // Đăng nhập với google
       loginWithGoogle: () => {
-        window.location.href = "http://127.0.0.1:8000/auth/google";
-      },
-            
-      // Action làm mới token
-      refreshToken: async () => {
-        try {
-          const response = await fetch("http://127.0.0.1:8000/auth/refresh", {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (!response.ok) {
-            // If refresh failed, logout user
-            get().logout();
-            return;
-          }
-
-          // If refresh successful, updated user data will be in cookies
-          // Update state with user data if available in response
-          const data = await response.json();
-          if (data && data.id) {
-            set({
-              user: data,
-              role: data.role,
-              error: null,
-            });
-          }
-        } catch (error) {
-          console.error("Token refresh failed:", error);
-          // Logout on refresh error
-          get().logout();
-        }
+        // Sử dụng window.open thay vì window.location.href
+        window.open('/auth/google', '_blank');
       },
 
       // Action xóa thông báo lỗi
       clearError: () => set({ error: null }),
+      
+      // Action xóa thông tin người dùng
+      clearUserData: () => set({
+        user: null,
+        role: null,
+        error: null,
+      }),
     }),
     {
-      name: "auth-storage", // tên storage key trong localStorage
-      storage: createJSONStorage(() => localStorage), // sử dụng localStorage
+      name: "auth-storage",
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        // chỉ lưu một số trường, không lưu trường isLoading và error
         user: state.user,
         role: state.role,
       }),

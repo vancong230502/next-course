@@ -29,9 +29,10 @@ export default function RootLayout({
           >
             <div className="flex min-h-screen flex-col">
               <Header />
+              <GlobalLoading />
               <main className="flex-1">{children}</main>
               <Footer />
-              <GlobalLoading />
+
             </div>
           </ThemeProvider>
       </body>
