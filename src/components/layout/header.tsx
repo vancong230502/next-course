@@ -263,15 +263,6 @@ export function Header() {
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </DropdownMenuItem>
-                  {user?.role === "USER" && (
-                    <DropdownMenuItem
-                      className="cursor-pointer"
-                      onClick={() => router.push("/USER")}
-                    >
-                      <ShieldCheck className="mr-2 h-4 w-4" />
-                      USER
-                    </DropdownMenuItem>
-                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="cursor-pointer"
